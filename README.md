@@ -21,17 +21,13 @@ It supports **I2C communication** and provides functions for sensor initializati
 ## Getting Started
 
 ### Prerequisites
-To use this library, ensure you have the following:
 - **STM32 HAL Library** (for I2C communication)
 - **An STM32 development board** (e.g., STM32F4)
 - **ADXL345 module** connected via I2C
 
----
+### Example Usage
 
-## Example Code
-
-### Initialization
-
+#### **Initialization**
 ```c
 ADXL_InitType ADXL_InitStruct = {
     .LP_MODE = LP_NORMAL,
@@ -55,8 +51,8 @@ ADXL_INTType ADXL_INTStruct = {
     .OVERRUN = OVERRUN_OFF
 };
 
-Reading Acceleration Data
 
+Reading Acceleration Data
 int16_t x, y, z = 0;
 
 int main() {
@@ -66,3 +62,58 @@ int main() {
 
     printf("%d, %d, %d\r\n", x, y, z);
 }
+
+
+Initialization Function in adxl345.c
+Function: void adxlInit(ADXL_InitType *initConfig)
+This function initializes the ADXL345 sensor and configures its settings.
+
+void adxlInit(ADXL_InitType *initConfig) {
+    if (initConfig == NULL) return;
+
+    resetRegisters();
+
+    /* Set BW_RATE */
+    bw_rate = initConfig->LP_MODE | initConfig->BWRATE;
+    writeRegister(BW_RATE, bw_rate);
+
+    /* Configure POWER_CTL */
+    power_ctl = initConfig->LINK_MODE |
+                initConfig->AUTOSLEEP_MODE |
+                initConfig->MEASURE_SET;
+    /* Optional */
+    //Wakeup(WAKEUP_8Hz);
+
+    if (initConfig->AUTOSLEEP_MODE == AUTOSLEEPMODE_ON) configureAutosleep();
+    writeRegister(POWER_CTL, power_ctl);
+
+    /* Set DATA_FORMAT */
+    data_format = initConfig->FULL_RES | initConfig->RANGE;
+    /* Optional */
+    //Self_Test(SELF_TEST_ON);
+    //Int_Invert(INT_ACTIVELOW);
+    //Justify(JUSTIFY_MSB);
+
+    writeRegister(DATA_FORMAT, data_format);
+
+    /* Configure FIFO_CTL */
+    fifo_ctl = initConfig->FIFO_MODE;
+    /* Optional */
+    //FIFO_Trigger_bit(FIFO_TRIGGER_INT2);
+    //FIFO_Samples(FIFO_SAMPLES_32);
+
+    writeRegister(FIFO_CTL, fifo_ctl);
+}
+
+Optional Features
+The following optional functions can be enabled inside adxlInit if needed:
+
+Wake-up Mode: Wakeup(WAKEUP_8Hz);
+Auto-Sleep Configuration: configureAutosleep();
+Self-Test Mode: Self_Test(SELF_TEST_ON);
+Interrupt Polarity Inversion: Int_Invert(INT_ACTIVELOW);
+Data Justification (MSB alignment): Justify(JUSTIFY_MSB);
+FIFO Trigger Source: FIFO_Trigger_bit(FIFO_TRIGGER_INT2);
+FIFO Sample Configuration: FIFO_Samples(FIFO_SAMPLES_32);
+These settings allow users to fine-tune the accelerometer’s behavior based on their requirements.
+
