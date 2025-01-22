@@ -118,5 +118,5 @@ FIFO Sample Configuration: FIFO_Samples(FIFO_SAMPLES_32);
 These settings allow users to fine-tune the accelerometer’s behavior based on their requirements.
 
 
-##### License
+License
 This project is licensed under the MIT License
